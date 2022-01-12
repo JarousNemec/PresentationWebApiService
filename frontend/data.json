@@ -1,0 +1,42 @@
+[
+  {
+    "PartitionKey":"1",
+    "RowKey":"2021-12-19 21:18:44.487752 +0000 UTC m=+2503.339323101",
+    "fieldSize":"25",
+    "mineCount":"4",
+    "playTime":"00:00:29",
+    "player":"jabahut"
+  },
+  {
+    "PartitionKey":"1",
+    "RowKey":"2021-12-20 08:20:36.9663528 +0000 UTC m=+42215.817923801",
+    "fieldSize":"25",
+    "mineCount":"2",
+    "playTime":"00:00:25",
+    "player":"jabahut"
+  },
+  {
+    "PartitionKey":"1",
+    "RowKey":"2021-12-20 08:33:01.6050888 +0000 UTC m=+42960.456659901",
+    "fieldSize":"25",
+    "mineCount":"3",
+    "playTime":"00:00:29",
+    "player":"jabahut"
+  },
+  {
+    "PartitionKey":"1",
+    "RowKey":"2021-12-20 08:34:28.5050093 +0000 UTC m=+43047.356580401",
+    "fieldSize":"100",
+    "mineCount":"9",
+    "playTime":"00:01:14",
+    "player":"jaja"
+  },
+  {
+    "PartitionKey":"1",
+    "RowKey":"2022-01-08 13:18:00.35356 +0100 CET m=+4.430076301",
+    "fieldSize":"30",
+    "mineCount":"48",
+    "playTime":"60",
+    "player":"jaja"
+  }
+]
