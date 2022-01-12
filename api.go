@@ -5,7 +5,6 @@ import (
 	_ "encoding/json"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/storage"
-	"github.com/Azure/go-autorest/logger"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -60,7 +59,7 @@ func allGameResults(c *gin.Context) {
 
 	messages, err = json.Marshal(entities.Entities)
 	var mess string
-	json.Unmarshal(messages, mess)
+	err = json.Unmarshal(messages, &mess)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -101,8 +100,10 @@ func handleRequests() {
 	r.GET("/allresults", allGameResults)
 	fmt.Println("prepare inserting")
 	r.Use(static.Serve("/", static.LocalFile("./frontend", false)))
-	r.Run(":8081")
-	logger.LogInfo.String()
+	err := r.Run(":8081")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func main() {
