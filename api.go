@@ -119,7 +119,6 @@ func getSolarPanelState(c *gin.Context) {
 }
 
 func setSolarPanelsState(c *gin.Context) {
-	//TODO: nastavení stavu panelů; vymyslet způsob na bezpečný call, nemohl zavolat nikdo jiný
 	fmt.Println("setting spstate...")
 	data := c.Request.URL.Query()["state"][0]
 	strings.ToLower(data)
@@ -134,13 +133,16 @@ func setSolarPanelsState(c *gin.Context) {
 }
 
 func handleRequests() {
-	r := gin.Default()
-	r.GET("/addresult", addGameResult)
-	r.GET("/allresults", allGameResults)
-	r.GET("/setspstate", setSolarPanelsState)
-	r.GET("/spstate", getSolarPanelState)
-	r.Use(static.Serve("/", static.LocalFile("./frontend", false)))
-	err := r.Run(":8081")
+	router := gin.Default()
+	auth := router.Group("/", AuthMiddleWare())
+	{
+		auth.GET("/addresult", addGameResult)
+		auth.GET("/setspstate", setSolarPanelsState)
+	}
+	router.GET("/allresults", allGameResults)
+	router.GET("/spstate", getSolarPanelState)
+	router.Use(static.Serve("/", static.LocalFile("./frontend", false)))
+	err := router.Run(":8081")
 	if err != nil {
 		fmt.Println(err)
 	}
