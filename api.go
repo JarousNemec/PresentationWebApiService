@@ -5,7 +5,6 @@ import (
 	_ "encoding/json"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/storage"
-	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -141,7 +140,15 @@ func handleRequests() {
 	}
 	router.GET("/allresults", allGameResults)
 	router.GET("/spstate", getSolarPanelState)
-	router.Use(static.Serve("/", static.LocalFile("./frontend", false)))
+	router.LoadHTMLGlob("./frontend/*.html")
+	router.Static("/assets/", "./frontend/assets")
+	router.Static("/images/", "./frontend/images")
+	router.GET("/solarIndex", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "solarIndex.html", nil)
+	})
+	router.GET("/index", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 	err := router.Run(":8081")
 	if err != nil {
 		fmt.Println(err)
