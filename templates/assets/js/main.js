@@ -1,7 +1,7 @@
 (function ($) {
 
     const userLang = navigator.language || navigator.userLanguage;
-    if (!userLang.includes('cs') && window.location.href.includes('index.html')) {
+    if (!userLang.includes('cs') && window.location.href.includes('mfLeaderBoard.html')) {
         if (userLang.includes('de')) {
             const ok = confirm('It seems that you may prefer German language over Czech.\nDo you want to switch to German language?\nOK = German\nCancel = Čeština');
             if (ok) window.location.href = './index_de.html';

@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/gin-gonic/gin"
+	//"github.com/goji/httpauth"
+	"html/template"
 	"net/http"
 	"strings"
 	"time"
 )
 
+var tpl *template.Template
 var (
 	tableCli storage.TableServiceClient
 )
@@ -132,29 +135,54 @@ func setSolarPanelsState(c *gin.Context) {
 }
 
 func handleRequests() {
+
 	router := gin.Default()
-	auth := router.Group("/", AuthMiddleWare())
+	authData := router.Group("/", AuthMiddleWare())
 	{
-		auth.GET("/addresult", addGameResult)
-		auth.GET("/setspstate", setSolarPanelsState)
+		authData.GET("/addresult", addGameResult)
+		authData.GET("/setspstate", setSolarPanelsState)
 	}
 	router.GET("/allresults", allGameResults)
 	router.GET("/spstate", getSolarPanelState)
-	router.LoadHTMLGlob("./frontend/*.html")
-	router.Static("/assets/", "./frontend/assets")
-	router.Static("/images/", "./frontend/images")
-	router.GET("/solarIndex", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "solarIndex.html", nil)
-	})
-	router.GET("/index", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
-	})
+
+	router.Static("/assets/", "./templates/assets")
+	router.Static("/images/", "./templates/images")
+
+	router.Handle(http.MethodGet, "/solarIndex", solarPanelsApp)
+	router.Handle(http.MethodGet, "/mfLeaderBoard", mfLeaderBoardApp)
+
 	err := router.Run(":8081")
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
+func solarPanelsApp(c *gin.Context) {
+	if c.Request.Method == http.MethodPost {
+		u := c.Request.FormValue("username")
+		p := c.Request.FormValue("password")
+		fmt.Println("inputy more")
+		fmt.Println(u)
+		fmt.Println(p)
+	}
+	err := tpl.ExecuteTemplate(c.Writer, "solarIndex.html", map[string]interface{}{
+		"now": time.Now(),
+	})
+	if err != nil {
+		return
+	}
+}
+
+func mfLeaderBoardApp(c *gin.Context) {
+	err := tpl.ExecuteTemplate(c.Writer, "mfLeaderBoard.html", nil)
+	if err != nil {
+		return
+	}
+
+}
+
+//TODO: zamyslet se nad tim ze by se data daly do templaty a nasledne by je zpracoval javascript
 func main() {
+	tpl = template.Must(template.ParseGlob("./templates/*.html"))
 	handleRequests()
 }

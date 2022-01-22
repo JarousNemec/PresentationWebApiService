@@ -4,8 +4,9 @@ go 1.17
 
 require (
 	github.com/Azure/azure-sdk-for-go v60.2.0+incompatible
-	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.7
+	github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d
+	github.com/gorilla/mux v1.8.0
 )
 
 require (
