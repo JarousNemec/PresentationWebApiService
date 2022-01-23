@@ -19,11 +19,12 @@ var (
 )
 
 const (
-	account      = "minefinderstorageaccount"
-	key          = "vqgU7HTQ39+i05unpYXB2/sjw6YVBVCzcgbDlcq1UH04qw2V8TxKMOoaobMkjUuM587C/0NZjbtdBobd83rhGg=="
-	fullmetadata = "application/json;odata=fullmetadata"
-	mftablename  = "MineFinder"
-	sptablename  = "solarpanels"
+	account       = "minefinderstorageaccount"
+	key           = "vqgU7HTQ39+i05unpYXB2/sjw6YVBVCzcgbDlcq1UH04qw2V8TxKMOoaobMkjUuM587C/0NZjbtdBobd83rhGg=="
+	fullmetadata  = "application/json;odata=fullmetadata"
+	mftablename   = "MineFinder"
+	sptablename   = "solarpanels"
+	authtablename = "authorization"
 )
 
 func insertGameResult(player string, playtime string, fieldSize string, mineCount string) {
@@ -164,6 +165,14 @@ func solarPanelsApp(c *gin.Context) {
 		fmt.Println("inputy more")
 		fmt.Println(u)
 		fmt.Println(p)
+		//if authorization["solerstate_set_code"] == p {
+		//	fmt.Println("successfully operation done...")
+		//}
+		//sID, _ := uuid.NewV4()
+		//var cookie = &http.Cookie{, Value: sID}
+		//c.SetCookie("session", sID.String())
+		//c.Redirect(200, "/solarIndex")
+		//return
 	}
 	err := tpl.ExecuteTemplate(c.Writer, "solarIndex.html", map[string]interface{}{
 		"now": time.Now(),
@@ -183,6 +192,7 @@ func mfLeaderBoardApp(c *gin.Context) {
 
 //TODO: zamyslet se nad tim ze by se data daly do templaty a nasledne by je zpracoval javascript
 func main() {
+	loadAuthorization()
 	tpl = template.Must(template.ParseGlob("./templates/*.html"))
 	handleRequests()
 }
