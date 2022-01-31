@@ -1,30 +1,17 @@
 package main
 
 import (
-	"encoding/json"
-	_ "encoding/json"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/gin-gonic/gin"
-	//"github.com/goji/httpauth"
 	"html/template"
 	"net/http"
-	"strings"
 	"time"
 )
 
 var tpl *template.Template
 var (
 	tableCli storage.TableServiceClient
-)
-
-const (
-	account       = "minefinderstorageaccount"
-	key           = "vqgU7HTQ39+i05unpYXB2/sjw6YVBVCzcgbDlcq1UH04qw2V8TxKMOoaobMkjUuM587C/0NZjbtdBobd83rhGg=="
-	fullmetadata  = "application/json;odata=fullmetadata"
-	mftablename   = "MineFinder"
-	sptablename   = "solarpanels"
-	authtablename = "authorization"
 )
 
 func insertGameResult(player string, playtime string, fieldSize string, mineCount string) {
@@ -60,14 +47,7 @@ func allGameResults(c *gin.Context) {
 	fmt.Println(tableCli)
 	table := tableCli.GetTableReference(mftablename)
 	entities, err := table.QueryEntities(30, fullmetadata, nil)
-	var messages []byte
 
-	messages, err = json.Marshal(entities.Entities)
-	var mess string
-	err = json.Unmarshal(messages, &mess)
-	if err != nil {
-		fmt.Println(err)
-	}
 	c.JSON(http.StatusOK, entities.Entities)
 }
 
@@ -101,7 +81,7 @@ func insertSpState(state bool) {
 	}
 }
 
-func getSolarPanelState(c *gin.Context) {
+func getSolarPanelState() interface{} {
 	client, err := storage.NewBasicClient(account, key)
 	if err != nil {
 		fmt.Printf("%s: \n", err)
@@ -110,29 +90,21 @@ func getSolarPanelState(c *gin.Context) {
 	fmt.Println(tableCli)
 	table := tableCli.GetTableReference(sptablename)
 	entities, err := table.QueryEntities(30, fullmetadata, nil)
-	var messages []byte
 
-	messages, err = json.Marshal(entities.Entities)
-	var mess string
-	err = json.Unmarshal(messages, &mess)
-	if err != nil {
-		fmt.Println(err)
-	}
-	c.JSON(http.StatusOK, entities.Entities)
+	return entities.Entities[0].Properties["state"]
 }
 
-func setSolarPanelsState(c *gin.Context) {
-	fmt.Println("setting spstate...")
-	data := c.Request.URL.Query()["state"][0]
-	strings.ToLower(data)
-	state := true
-	if data == "true" {
-		state = true
+func getSolarPanelStateJSON(c *gin.Context) {
+	client, err := storage.NewBasicClient(account, key)
+	if err != nil {
+		fmt.Printf("%s: \n", err)
 	}
-	if data == "false" {
-		state = false
-	}
-	insertSpState(state)
+	tableCli = client.GetTableService()
+	fmt.Println(tableCli)
+	table := tableCli.GetTableReference(sptablename)
+	entities, err := table.QueryEntities(30, fullmetadata, nil)
+
+	c.JSON(http.StatusOK, entities.Entities)
 }
 
 func handleRequests() {
@@ -141,15 +113,17 @@ func handleRequests() {
 	authData := router.Group("/", AuthMiddleWare())
 	{
 		authData.GET("/addresult", addGameResult)
-		authData.GET("/setspstate", setSolarPanelsState)
 	}
 	router.GET("/allresults", allGameResults)
-	router.GET("/spstate", getSolarPanelState)
+	router.GET("/spstate", getSolarPanelStateJSON)
 
 	router.Static("/assets/", "./templates/assets")
 	router.Static("/images/", "./templates/images")
 
-	router.Handle(http.MethodGet, "/solarIndex", solarPanelsApp)
+	router.Handle("GET", "/solarIndex", solarPanelsApp)
+
+	router.Handle("POST", "/solarIndex", solarPanelsApp)
+
 	router.Handle(http.MethodGet, "/mfLeaderBoard", mfLeaderBoardApp)
 
 	err := router.Run(":8081")
@@ -158,28 +132,38 @@ func handleRequests() {
 	}
 }
 
+type Content struct {
+	Status bool
+}
+
 func solarPanelsApp(c *gin.Context) {
-	if c.Request.Method == http.MethodPost {
-		u := c.Request.FormValue("username")
-		p := c.Request.FormValue("password")
-		fmt.Println("inputy more")
-		fmt.Println(u)
-		fmt.Println(p)
-		//if authorization["solerstate_set_code"] == p {
-		//	fmt.Println("successfully operation done...")
-		//}
-		//sID, _ := uuid.NewV4()
-		//var cookie = &http.Cookie{, Value: sID}
-		//c.SetCookie("session", sID.String())
-		//c.Redirect(200, "/solarIndex")
-		//return
+	state := getSolarPanelState()
+	if c.Request.Method == http.MethodPost && authSettingSolarState(c) {
+		insertSpState(!state.(bool))
+		state = getSolarPanelState()
 	}
-	err := tpl.ExecuteTemplate(c.Writer, "solarIndex.html", map[string]interface{}{
-		"now": time.Now(),
-	})
-	if err != nil {
-		return
+	if state == true {
+		status := Content{Status: true}
+		err := tpl.ExecuteTemplate(c.Writer, "solarIndex.html", status)
+		if err != nil {
+			return
+		}
+
+	} else {
+		status := Content{Status: false}
+		err := tpl.ExecuteTemplate(c.Writer, "solarIndex.html", status)
+		if err != nil {
+			return
+		}
 	}
+
+}
+
+func authSettingSolarState(c *gin.Context) bool {
+	if c.PostForm("code") == authorization["solerstate_set_code"] {
+		return true
+	}
+	return false
 }
 
 func mfLeaderBoardApp(c *gin.Context) {
@@ -190,7 +174,6 @@ func mfLeaderBoardApp(c *gin.Context) {
 
 }
 
-//TODO: zamyslet se nad tim ze by se data daly do templaty a nasledne by je zpracoval javascript
 func main() {
 	loadAuthorization()
 	tpl = template.Must(template.ParseGlob("./templates/*.html"))

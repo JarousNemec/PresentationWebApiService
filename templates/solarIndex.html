@@ -13,14 +13,20 @@
 
 <body class="is-preload">
 
-Date: {{.now}}
-<h1>Login Bro</h1>
-<form method="post">
-
-    <input type="text" name="username" placeholder="email">
-    <input type="password" name="password" placeholder="password">
-    <input type="submit">
+{{if .Status}}
+<form method="POST">
+    <label style="color: green">Zapnuto</label><br/>
+    <label>Kód:</label>
+    <input type="text" name="code"><br/>
+    <input type="submit" value="Vypnout">
 </form>
+{{else}}
+<form method="POST">
+    <label style="color: red">Vypnuto</label><br/>
+    <label>Kód:</label>
+    <input type="text" name="code"><br/>
+    <input type="submit" value="Zapnout">
+</form>
+{{end}}
 </body>
-
 </html>

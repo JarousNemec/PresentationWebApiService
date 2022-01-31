@@ -32,4 +32,5 @@ func loadAuthorization() {
 	table := tableCli.GetTableReference(authtablename)
 	entities, err := table.QueryEntities(30, fullmetadata, nil)
 	authorization = entities.Entities[0].Properties
+	//fmt.Println(entities.Entities[0].Properties)
 }
